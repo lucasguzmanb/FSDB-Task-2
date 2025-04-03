@@ -39,8 +39,7 @@ CREATE OR REPLACE PACKAGE BODY fondicu AS
         IF v_reservation_count > 0 THEN
             -- Convert the reservation to a loan by updating the existing record
             UPDATE loans
-              SET type = 'L',
-                  return = TRUNC(SYSDATE) + 14
+              SET type = 'L'
             WHERE signature = p_signature
               AND TRIM(user_id) = TRIM(v_user_id)
               AND type = 'R';
@@ -120,7 +119,7 @@ CREATE OR REPLACE PACKAGE BODY fondicu AS
                 v_province,
                 'L',
                 0,
-                TRUNC(SYSDATE) + 14
+                NULL
             );
             
             COMMIT;
@@ -252,10 +251,12 @@ CREATE OR REPLACE PACKAGE BODY fondicu AS
         FROM users
         WHERE TRIM(user_id) = TRIM(v_user_id);
 
+        -- Check if the user exists
         IF v_count_users = 0 THEN
             RAISE_APPLICATION_ERROR(-20001, 'User ' || TRIM(v_user_id) || ' not found');
         END IF;
 
+        -- Check if the user has any active loans for the given signature
         SELECT COUNT(*) INTO v_count_loans
         FROM loans
         WHERE signature = p_signature 
