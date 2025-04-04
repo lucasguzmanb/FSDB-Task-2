@@ -63,6 +63,99 @@ BEGIN
 END;
 /
 
+-- view my_reservations
+
+
+-- Crear vista my_reservations para el usuario actual (USER)
+CREATE OR REPLACE VIEW my_reservations AS
+SELECT
+  l.signature,
+  l.stopdate AS reservation_date,
+  e.title,
+  e.author,
+  e.isbn
+FROM loans l
+JOIN copies c ON l.signature = c.signature
+JOIN editions e ON c.isbn = e.isbn
+WHERE l.user_id = USER
+  AND l.type = 'R';
+
+-- Trigger para INSERTAR una reserva si hay una copia disponible del ISBN
+CREATE OR REPLACE TRIGGER trg_insert_my_reservations
+INSTEAD OF INSERT ON my_reservations
+FOR EACH ROW
+DECLARE
+  v_signature copies.signature%TYPE;
+BEGIN
+  SELECT c.signature INTO v_signature
+  FROM copies c
+  WHERE c.isbn = :NEW.isbn
+    AND c.signature NOT IN (
+      SELECT l.signature
+      FROM loans l
+      WHERE l.return IS NULL
+    )
+    AND ROWNUM = 1;
+
+  INSERT INTO loans (
+    signature, user_id, stopdate, town, province, type, time, return
+  )
+  VALUES (
+    v_signature, USER, :NEW.reservation_date, 'Madrid', 'Madrid', 'R', 0, NULL
+  );
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RAISE_APPLICATION_ERROR(-20001, 'No hay copias disponibles para este ISBN.');
+END;
+/
+
+-- Trigger para ELIMINAR una reserva
+CREATE OR REPLACE TRIGGER trg_delete_my_reservations
+INSTEAD OF DELETE ON my_reservations
+FOR EACH ROW
+BEGIN
+  DELETE FROM loans
+  WHERE signature = :OLD.signature
+    AND user_id = USER
+    AND stopdate = :OLD.reservation_date
+    AND type = 'R';
+END;
+/
+
+-- Trigger para ACTUALIZAR la fecha de una reserva si hay disponibilidad
+CREATE OR REPLACE TRIGGER trg_update_my_reservations
+INSTEAD OF UPDATE ON my_reservations
+FOR EACH ROW
+DECLARE
+  v_signature copies.signature%TYPE;
+BEGIN
+  SELECT c.signature INTO v_signature
+  FROM copies c
+  WHERE c.isbn = :OLD.isbn
+    AND c.signature = :OLD.signature
+    AND NOT EXISTS (
+      SELECT 1
+      FROM loans l
+      WHERE l.signature = c.signature
+        AND l.stopdate = :NEW.reservation_date
+        AND l.return IS NULL
+    )
+    AND ROWNUM = 1;
+
+  UPDATE loans
+  SET stopdate = :NEW.reservation_date
+  WHERE signature = :OLD.signature
+    AND user_id = USER
+    AND stopdate = :OLD.reservation_date
+    AND type = 'R';
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    RAISE_APPLICATION_ERROR(-20002, 'No hay disponibilidad para cambiar a esa fecha.');
+END;
+/
+
+
 
 
 
