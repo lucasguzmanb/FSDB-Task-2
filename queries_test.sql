@@ -1,0 +1,15 @@
+-- Query A
+UPDATE editions 
+SET language = 'gallego' 
+WHERE isbn = '978-84-683-5157-5' 
+AND title = 'Ben'; 
+
+-- Query B
+INSERT INTO loans (SIGNATURE, USER_ID, STOPDATE, TOWN, PROVINCE, TYPE, TIME, RETURN) 
+VALUES ('PD137', '0546923640', TO_DATE('20-NOV-2024', 'DD-MON-YYYY'), 'Sotoverde de Debajo', 'Castellón', 'L', 120, NULL); 
+
+INSERT INTO loans (SIGNATURE, USER_ID, STOPDATE, TOWN, PROVINCE, TYPE, TIME, RETURN) 
+VALUES ('NB427', '0546923640', TO_DATE('20-NOV-2024', 'DD-MON-YYYY'), 'Sotoverde de Debajo', 'Castellón', 'L', 120, NULL); 
+
+INSERT INTO loans (SIGNATURE, USER_ID, STOPDATE, TOWN, PROVINCE, TYPE, TIME, RETURN) 
+VALUES ('GL007', '0546923640', TO_DATE('20-NOV-2024', 'DD-MON-YYYY'), 'Sotoverde de Debajo', 'Castellón', 'L', 120, NULL); 
