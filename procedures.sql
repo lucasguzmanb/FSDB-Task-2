@@ -1,11 +1,11 @@
-CREATE OR REPLACE PACKAGE fondicu AS
+CREATE OR REPLACE PACKAGE foundicu AS
     PROCEDURE insert_loan_procedure (p_signature IN CHAR);
     PROCEDURE insert_reservation_procedure (p_isbn IN VARCHAR2, p_date IN DATE);
     PROCEDURE record_book_return (p_signature IN CHAR);
-END fondicu;
+END foundicu;
 /
 
-CREATE OR REPLACE PACKAGE BODY fondicu AS
+CREATE OR REPLACE PACKAGE BODY foundicu AS
   PROCEDURE insert_loan_procedure (p_signature IN CHAR) IS
       v_user_id    CHAR(10) := USER;
       v_user_type   CHAR(1);
@@ -280,5 +280,5 @@ CREATE OR REPLACE PACKAGE BODY fondicu AS
             ROLLBACK;
             RAISE;
     END;
-END fondicu;
+END foundicu;
 /
