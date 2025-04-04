@@ -22,71 +22,64 @@ UPDATE my_loans SET stopdate = TO_DATE('24-11-2024', 'DD-MM-YYYY') WHERE signatu
 
 -- Test my_reservations
 
-CREATE OR REPLACE VIEW my_reservations AS
-SELECT
-  signature,
-  stopdate AS reservation_date,
-  town,
-  province
-FROM loans
-WHERE user_id = '9994309848'
-  AND type = 'R';
 
+INSERT INTO assign_drv (passport, taskdate, route_id)
+VALUES (
+  'ESP>>101010101010',
+  TO_DATE('01-12-2024', 'DD-MM-YYYY'),
+  'MA-03'
+);
+INSERT INTO assign_bus (plate, taskdate, route_id)
+VALUES (
+  'BUS-011',
+  TO_DATE('01-12-2024', 'DD-MM-YYYY'),
+  'MA-03'
+);
+INSERT INTO services (town, province, bus, taskdate, passport)
+VALUES (
+  'Valsolana',
+  'Madrid',
+  'BUS-011',
+  TO_DATE('01-12-2024', 'DD-MM-YYYY'),
+  'ESP>>101010101010'
+);
+INSERT INTO users VALUES (
+  USER,
+  'TESTIDCARD1234567',
+  'TestName',
+  'TestSurname1',
+  'TestSurname2',
+  TO_DATE('27-10-2004', 'DD-MM-YYYY'),
+  'Valsolana',
+  'Madrid',
+  'Test Address',
+  'test@example.com',
+  600000000,
+  'P',
+  NULL
+);
+DELETE FROM loans WHERE signature = 'PD137' AND user_id = USER;
+INSERT INTO loans VALUES (
+  'PD137',
+  USER,
+  TO_DATE('01-12-2024', 'DD-MM-YYYY'),
+  'Valsolana',
+  'Madrid',
+  'R',
+  0,
+  NULL
+);
+SELECT * FROM my_reservations;
 
-CREATE OR REPLACE TRIGGER trg_insert_my_reservations
-INSTEAD OF INSERT ON my_reservations
-FOR EACH ROW
-BEGIN
-  INSERT INTO loans (
-    signature,
-    user_id,
-    stopdate,
-    town,
-    province,
-    type,
-    time,
-    return
-  )
-  VALUES (
-    :NEW.signature,
-    '9994309848',
-    :NEW.reservation_date,
-    :NEW.town,
-    :NEW.province,
-    'R',
-    0,
-    NULL
-  );
-END;
-/
+UPDATE my_reservations
+SET reservation_date = TO_DATE('10-12-2024', 'DD-MM-YYYY')
+WHERE signature = 'PD137'
+  AND isbn = '84-283-2141-8';
 
+SELECT * FROM my_reservations WHERE signature = 'PD137';
 
-CREATE OR REPLACE TRIGGER trg_delete_my_reservations
-INSTEAD OF DELETE ON my_reservations
-FOR EACH ROW
-BEGIN
-  DELETE FROM loans
-  WHERE signature = :OLD.signature
-    AND user_id = '9994309848'
-    AND stopdate = :OLD.reservation_date
-    AND type = 'R';
-END;
-/
+DELETE FROM my_reservations WHERE signature = 'PD137'
+  AND reservation_date = TO_DATE('10-12-2024', 'DD-MM-YYYY')
+  AND isbn = '84-283-2141-8';
 
-
-CREATE OR REPLACE TRIGGER trg_update_my_reservations
-INSTEAD OF UPDATE ON my_reservations
-FOR EACH ROW
-BEGIN
-  UPDATE loans
-  SET stopdate = :NEW.reservation_date
-  WHERE signature = :OLD.signature
-    AND user_id = '9994309848'
-    AND stopdate = :OLD.reservation_date
-    AND type = 'R';
-END;
-/
-
-DELETE FROM posts WHERE USER_ID = USER;
-DELETE FROM loans WHERE USER_ID = USER;
-DELETE FROM users WHERE USER_ID = USER;
+SELECT * FROM my_reservations WHERE signature = 'PD137';
