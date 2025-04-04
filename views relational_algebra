@@ -1,0 +1,7 @@
+--relational algebra mydata
+
+π user_id, id_card, name, surname1, surname2, birthdate, town, province, address, email, phone 
+(σ user_id = USER (users))
+
+
+
