@@ -2,7 +2,7 @@
 INSERT INTO users  VALUES (USER, 'TESTIDCARD1234567', 'TestName', 'TestSurname1', 'TestSurname2', TO_DATE('27-10-2004', 'DD-MM-YYYY'), 'Valsolana', 'Madrid', 'Test Address', 'test@example.com', 600000000, 'P', NULL);
 
 -- Test my_data
-SELECT * FROM my_data;
+SELECT user_id, name, birthdate FROM my_data;
 
 -- Test my_loans
 -- We insert a few loans and a comment to test the view and then select from it
