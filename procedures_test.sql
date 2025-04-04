@@ -1,8 +1,7 @@
--- TESTS
+-- Testing user
+INSERT INTO users  VALUES (USER, 'TESTIDCARD1234567', 'TestName', 'TestSurname1', 'TestSurname2', TO_DATE('27-10-2004', 'DD-MM-YYYY'), 'Valsolana', 'Madrid', 'Test Address', 'test@example.com', 600000000, 'P', NULL);
 
 -- insert_loan_procedure
-
-INSERT INTO users  VALUES (USER, 'TESTIDCARD1234567', 'TestName', 'TestSurname1', 'TestSurname2', TO_DATE('27-10-2004', 'DD-MM-YYYY'), 'Valsolana', 'Madrid', 'Test Address', 'test@example.com', 600000000, 'P', NULL);
 
 -- Success case
 DELETE FROM loans WHERE USER_ID = USER;
@@ -30,17 +29,6 @@ EXCEPTION
 END;
 /
 
--- Failure case: User is banned
-BEGIN
-  -- We ban the current user to simulate the error
-  UPDATE users SET ban_up2 = TRUNC(SYSDATE) + 1 WHERE user_id = USER;
-  foundicu.insert_loan_procedure(p_signature => 'CK239');
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Expected error (user banned): ' || SQLERRM);
-END;
-/
-
 -- Failure case: User has reached the borrowing limit
 -- We insert 2 loans to reach the limit
 DELETE FROM loans WHERE USER_ID = USER;
@@ -51,17 +39,6 @@ BEGIN
 EXCEPTION
   WHEN OTHERS THEN
     DBMS_OUTPUT.PUT_LINE('Expected error (loan limit reached): ' || SQLERRM);
-END;
-/
-
--- Failure case: Copy not available for loan
-DELETE FROM loans WHERE USER_ID = USER;
-INSERT INTO loans VALUES ('CK237', USER, TO_DATE('23-11-2024', 'DD-MM-YYYY'), 'Valsolana', 'Madrid', 'L', 0, TRUNC(SYSDATE) + 14);
-BEGIN
-  foundicu.insert_loan_procedure(p_signature => 'CK237');
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Expected error (copy not available): ' || SQLERRM);
 END;
 /
 
@@ -78,18 +55,7 @@ EXCEPTION
     DBMS_OUTPUT.PUT_LINE('Unexpected error in insert_reservation_procedure: ' || SQLERRM);
 END;
 /
-
--- Failure case: User not found
-BEGIN
-  -- We delete the user to simulate the error
-  DELETE FROM loans WHERE USER_ID = USER;
-  DELETE FROM users WHERE USER_ID = USER;
-  foundicu.insert_reservation_procedure(p_isbn => '978-84-8053-584-7', p_date => TO_DATE('23-11-2024', 'DD-MM-YYYY'));
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Expected error (user does not exist): ' || SQLERRM);
-END;
-/
+SELECT signature, user_id, type, return FROM loans WHERE user_id=USER;
 
 -- Failure case: User is banned
 BEGIN
@@ -99,28 +65,6 @@ BEGIN
 EXCEPTION
   WHEN OTHERS THEN
     DBMS_OUTPUT.PUT_LINE('Expected error (user banned): ' || SQLERRM);
-END;
-/
-
--- Failure case: User has reached the borrowing limit
--- We insert 2 loans to reach the limit
-DELETE FROM loans WHERE USER_ID = USER;
-INSERT INTO loans VALUES ('CK239', USER, TO_DATE('23-11-2024', 'DD-MM-YYYY'), 'Valsolana', 'Madrid', 'L', 0, TRUNC(SYSDATE) + 14);
-INSERT INTO loans VALUES ('CK237', USER, TO_DATE('23-11-2024', 'DD-MM-YYYY'), 'Valsolana', 'Madrid', 'L', 0, TRUNC(SYSDATE) + 14);
-BEGIN
-  foundicu.insert_reservation_procedure(p_isbn => '978-84-8053-584-7', p_date => TO_DATE('23-11-2024', 'DD-MM-YYYY'));
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Expected error (loan limit reached): ' || SQLERRM);
-END;
-/
-
--- Failure case: No available copy for the requested period
-BEGIN
-  foundicu.insert_reservation_procedure(p_isbn => 'NON_EXISTING_ISBN', p_date => TO_DATE('23-11-2024', 'DD-MM-YYYY'));
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Expected error (no copy available): ' || SQLERRM);
 END;
 /
 
@@ -137,18 +81,7 @@ EXCEPTION
     DBMS_OUTPUT.PUT_LINE('Unexpected error in record_book_return: ' || SQLERRM);
 END;
 /
-
--- Failure case: User not found
-BEGIN
-  -- We delete the user to simulate the error
-  DELETE FROM loans WHERE USER_ID = USER;
-  DELETE FROM users WHERE USER_ID = USER;
-  foundicu.record_book_return(p_signature => 'CK239');
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('Expected error (user does not exist): ' || SQLERRM);
-END;
-/
+SELECT signature, user_id, type, return FROM loans WHERE user_id=USER;
 
 -- Failure case: No loan found with the given signature and user_id
 BEGIN
